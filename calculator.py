@@ -7,7 +7,7 @@ class AdvancedCalculator:
         self.root = root
         self.root.title("Ultimate Calculator")
         self.root.geometry("400x600")
-        self.root.resizable(False, False)
+        self.root.resizable(True, True)
         
         self.expression = ""
         self.input_text = tk.StringVar()
@@ -35,10 +35,10 @@ class AdvancedCalculator:
         
         # Input Field
         input_frame = ttk.Frame(self.root)
-        input_frame.pack(pady=10)
+        input_frame.pack(pady=10, fill="both")
         
         input_field = ttk.Entry(input_frame, textvariable=self.input_text, font=('Arial', 18), justify='right')
-        input_field.grid(row=0, column=0, columnspan=4, ipadx=8, ipady=8, padx=10, pady=10)
+        input_field.pack(fill="both", padx=10, pady=10, ipady=8)
         
         # Buttons
         buttons = [
@@ -47,15 +47,23 @@ class AdvancedCalculator:
             ('1', '2', '3', '-'),
             ('0', '.', '=', '+'),
             ('C', 'sin', 'cos', 'tan'),
-            ('log', '^', '(', ')')
+            ('log', '^', '(', ')'),
+            ('√', 'π', 'e', 'mod')
         ]
         
+        button_frame = ttk.Frame(self.root)
+        button_frame.pack(fill="both", expand=True)
+        
         for i, row in enumerate(buttons):
-            frame = ttk.Frame(self.root)
-            frame.pack()
             for j, btn_text in enumerate(row):
-                btn = ttk.Button(frame, text=btn_text, command=lambda text=btn_text: self.on_button_click(text))
-                btn.grid(row=i, column=j, padx=5, pady=5, ipadx=10, ipady=10)
+                btn = ttk.Button(button_frame, text=btn_text, command=lambda text=btn_text: self.on_button_click(text))
+                btn.grid(row=i, column=j, padx=5, pady=5, ipadx=10, ipady=10, sticky='nsew')
+        
+        # grid to expend
+        for i in range(len(buttons)):
+            button_frame.rowconfigure(i, weight=1)
+        for j in range(4):
+            button_frame.columnconfigure(j, weight=1)
     
     def on_button_click(self, text):
         if text == "C":
@@ -67,7 +75,7 @@ class AdvancedCalculator:
             except Exception:
                 messagebox.showerror("Error", "Invalid input")
                 self.expression = ""
-        elif text in ('sin', 'cos', 'tan', 'log'):
+        elif text in ('sin', 'cos', 'tan', 'log', '√', 'π', 'e', 'mod'):
             try:
                 if self.expression:
                     value = float(eval(self.expression))
@@ -79,6 +87,14 @@ class AdvancedCalculator:
                         self.expression = str(math.tan(math.radians(value)))
                     elif text == 'log':
                         self.expression = str(math.log10(value))
+                    elif text == '√':
+                        self.expression = str(math.sqrt(value))
+                    elif text == 'π':
+                        self.expression = str(math.pi)
+                    elif text == 'e':
+                        self.expression = str(math.e)
+                    elif text == 'mod':
+                        self.expression += '%'
             except Exception:
                 messagebox.showerror("Error", "Calculation not possible")
                 self.expression = ""

@@ -1,124 +1,104 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-import numpy as np
-import sympy as sp
-import matplotlib.pyplot as plt
-import ttkthemes
-import qrcode
-import random
-from scipy.integrate import odeint
+import math
 
-class UltimateCalculator:
+class AdvancedCalculator:
     def __init__(self, root):
         self.root = root
-        self.root.title("Ultimate Calculator - :D")
-        self.root.geometry("700x900")
+        self.root.title("Ultimate Calculator")
+        self.root.geometry("400x600")
         self.root.resizable(False, False)
+        
         self.expression = ""
-        self.history = []
-
-        # for the theme :p
-        self.style = ttkthemes.ThemedStyle(root)
-        self.style.set_theme("breeze")
-
-        # this is the display fields
         self.input_text = tk.StringVar()
-        self.input_field = ttk.Entry(self.root, textvariable=self.input_text, font=('Arial', 20), justify='right', state='readonly')
-        self.input_field.pack(fill="both", ipadx=8, ipady=8, padx=10, pady=10)
-
-        # to create buttons
-        self.create_buttons()
-
-    def create_buttons(self):
+        
+        # Theme variables
+        self.theme = "light"
+        self.light_bg = "#F7F7F7"
+        self.dark_bg = "#2C3E50"
+        self.light_fg = "#000000"
+        self.dark_fg = "#FFFFFF"
+        
+        self.root.configure(bg=self.light_bg)
+        
+        # Menu Bar
+        menu_bar = tk.Menu(self.root)
+        self.root.config(menu=menu_bar)
+        
+        theme_menu = tk.Menu(menu_bar, tearoff=0)
+        theme_menu.add_command(label="Light Mode", command=self.light_mode)
+        theme_menu.add_command(label="Dark Mode", command=self.dark_mode)
+        
+        menu_bar.add_cascade(label="Theme", menu=theme_menu)
+        menu_bar.add_command(label="About", command=self.show_about)
+        menu_bar.add_command(label="Exit", command=self.root.quit)
+        
+        # Input Field
+        input_frame = ttk.Frame(self.root)
+        input_frame.pack(pady=10)
+        
+        input_field = ttk.Entry(input_frame, textvariable=self.input_text, font=('Arial', 18), justify='right')
+        input_field.grid(row=0, column=0, columnspan=4, ipadx=8, ipady=8, padx=10, pady=10)
+        
+        # Buttons
         buttons = [
             ('7', '8', '9', '/'),
             ('4', '5', '6', '*'),
             ('1', '2', '3', '-'),
             ('0', '.', '=', '+'),
-            ('C', '⌫', '(', ')'),
-            ('sin', 'cos', 'tan', '√'),
-            ('log', '^', '!', 'π'),
-            ('e', '1/x', 'fact', 'rand'),
-            ('x²', 'x³', 'xⁿ', 'mod'),
-            ('Graph', 'frac', 'solve', 'convert'),
-            ('bin', 'hex', 'ascii', 'qr'),
-            ('derive', 'integrate', 'matrix', 'finance'),
-            ('limit', 'taylor', 'ODE', 'stats')
+            ('C', 'sin', 'cos', 'tan'),
+            ('log', '^', '(', ')')
         ]
-
-        for row in buttons:
+        
+        for i, row in enumerate(buttons):
             frame = ttk.Frame(self.root)
-            frame.pack(fill="both", expand=True)
-            for btn_text in row:
+            frame.pack()
+            for j, btn_text in enumerate(row):
                 btn = ttk.Button(frame, text=btn_text, command=lambda text=btn_text: self.on_button_click(text))
-                btn.pack(side="left", expand=True, fill="both", padx=3, pady=3)
-
+                btn.grid(row=i, column=j, padx=5, pady=5, ipadx=10, ipady=10)
+    
     def on_button_click(self, text):
         if text == "C":
             self.expression = ""
-        elif text == "⌫":
-            self.expression = self.expression[:-1]
         elif text == "=":
             try:
-                result = eval(self.expression.replace("^", "**").replace("π", str(np.pi)).replace("e", str(np.e)))
-                self.history.append(f"{self.expression} = {result}")
-                self.expression = str(result)
-            except:
-                messagebox.showerror("Error", "Invalid expression")
+                self.expression = self.expression.replace('^', '**')
+                self.expression = str(eval(self.expression))
+            except Exception:
+                messagebox.showerror("Error", "Invalid input")
                 self.expression = ""
-        elif text == "derive":
-            x = sp.Symbol('x')
-            expr = sp.sympify(self.expression)
-            self.expression = str(sp.diff(expr, x))
-        elif text == "integrate":
-            x = sp.Symbol('x')
-            expr = sp.sympify(self.expression)
-            self.expression = str(sp.integrate(expr, x))
-        elif text == "bin":
-            self.expression = bin(int(self.expression))[2:]
-        elif text == "hex":
-            self.expression = hex(int(self.expression))[2:]
-        elif text == "ascii":
-            self.expression = chr(int(self.expression))
-        elif text == "qr":
-            self.generate_qr_code()
-        elif text == "matrix":
-            self.matrix_operations()
-        elif text == "finance":
-            self.finance_operations()
-        elif text == "limit":
-            x = sp.Symbol('x')
-            expr = sp.sympify(self.expression)
-            self.expression = str(sp.limit(expr, x, 0))
-        elif text == "taylor":
-            x = sp.Symbol('x')
-            expr = sp.sympify(self.expression)
-            self.expression = str(sp.series(expr, x, 0, 5))
-        elif text == "ODE":
-            self.solve_ode()
-        elif text == "stats":
-            self.stats_operations()
+        elif text in ('sin', 'cos', 'tan', 'log'):
+            try:
+                if self.expression:
+                    value = float(eval(self.expression))
+                    if text == 'sin':
+                        self.expression = str(math.sin(math.radians(value)))
+                    elif text == 'cos':
+                        self.expression = str(math.cos(math.radians(value)))
+                    elif text == 'tan':
+                        self.expression = str(math.tan(math.radians(value)))
+                    elif text == 'log':
+                        self.expression = str(math.log10(value))
+            except Exception:
+                messagebox.showerror("Error", "Calculation not possible")
+                self.expression = ""
         else:
             self.expression += text
         self.input_text.set(self.expression)
-
-    def generate_qr_code(self):
-        qr = qrcode.make(self.expression)
-        qr.show()
-
-    def matrix_operations(self):
-        messagebox.showinfo("Matrix Mode", "Feature to be implemented")
     
-    def finance_operations(self):
-        messagebox.showinfo("Finance Mode", "Feature to be implemented")
+    def light_mode(self):
+        self.theme = "light"
+        self.root.configure(bg=self.light_bg)
     
-    def solve_ode(self):
-        messagebox.showinfo("ODE Solver", "Feature to be implemented")
+    def dark_mode(self):
+        self.theme = "dark"
+        self.root.configure(bg=self.dark_bg)
     
-    def stats_operations(self):
-        messagebox.showinfo("Statistics Mode", "Feature to be implemented")
+    def show_about(self):
+        messagebox.showinfo("About", "Ultimate Calculator\nCreated with Tkinter & ttk.")
 
 if __name__ == "__main__":
     root = tk.Tk()
-    calculator = UltimateCalculator(root)
+    calculator = AdvancedCalculator(root)
     root.mainloop()
+
